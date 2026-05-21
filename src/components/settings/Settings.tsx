@@ -61,11 +61,17 @@ export function Settings() {
       <div className="p-4 space-y-4">
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <div className="px-4 py-3 border-b border-gray-100">
-            <p className="font-semibold text-gray-900 text-sm">Anthropic API Key</p>
-            <p className="text-xs text-gray-400 mt-0.5">Required for card scanning. Get one at <a href="https://console.anthropic.com" target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">console.anthropic.com</a></p>
+            <div className="flex items-center gap-2">
+              <p className="font-semibold text-gray-900 text-sm">Anthropic API Key</p>
+              <span className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">Optional</span>
+            </div>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Without a key, the app uses built-in OCR. With a key, Claude AI extracts details much more accurately. Get one at{' '}
+              <a href="https://console.anthropic.com" target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">console.anthropic.com</a>
+            </p>
           </div>
           <div className="p-4 space-y-3">
-            <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} onBlur={saveKey} placeholder="sk-ant-..." className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} onBlur={saveKey} placeholder="sk-ant-... (optional)" className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500" />
             {testResult === 'success' && (
               <p className="text-green-600 text-sm flex items-center gap-1.5">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4"><polyline points="20 6 9 17 4 12" /></svg>
@@ -82,7 +88,7 @@ export function Settings() {
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <div className="px-4 py-3 border-b border-gray-100">
             <p className="font-semibold text-gray-900 text-sm">Claude Model</p>
-            <p className="text-xs text-gray-400 mt-0.5">Haiku is faster and cheaper; Sonnet is more accurate</p>
+            <p className="text-xs text-gray-400 mt-0.5">Only used when an API key is set above</p>
           </div>
           <div className="divide-y divide-gray-100">
             {[
