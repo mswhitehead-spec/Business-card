@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { testApiKey } from '../../lib/claude';
+import { isWebGPUAvailable, isModelCached, preloadModel } from '../../lib/vlm';
 import { getStorageUsageKB, clearStorage } from '../../lib/storage';
 import { Spinner } from '../ui/Spinner';
 
@@ -11,6 +12,14 @@ export function Settings() {
   const [testResult, setTestResult] = useState<'success' | 'error' | null>(null);
   const [testError, setTestError] = useState('');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [vlmCached, setVlmCached] = useState<boolean | null>(null);
+  const [preloading, setPreloading] = useState(false);
+  const [preloadMsg, setPreloadMsg] = useState('');
+  const webGPU = isWebGPUAvailable();
+
+  useEffect(() => {
+    isModelCached().then(setVlmCached);
+  }, []);
 
   function saveKey() {
     dispatch({ type: 'SET_SETTINGS', settings: { anthropicApiKey: apiKey.trim() } });
@@ -30,6 +39,20 @@ export function Settings() {
       setTestError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setTesting(false);
+    }
+  }
+
+  async function handlePreload() {
+    setPreloading(true);
+    setPreloadMsg('Starting download...');
+    try {
+      await preloadModel(({ message }) => setPreloadMsg(message));
+      setVlmCached(true);
+      setPreloadMsg('');
+    } catch (err) {
+      setPreloadMsg(err instanceof Error ? err.message : 'Download failed');
+    } finally {
+      setPreloading(false);
     }
   }
 
@@ -66,7 +89,7 @@ export function Settings() {
               <span className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">Optional</span>
             </div>
             <p className="text-xs text-gray-400 mt-0.5">
-              Without a key, the app uses built-in OCR. With a key, Claude AI extracts details much more accurately. Get one at{' '}
+              Without a key, the app uses on-device AI (WebGPU) or basic OCR. Add a key for Claude AI extraction.{' '}
               <a href="https://console.anthropic.com" target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">console.anthropic.com</a>
             </p>
           </div>
@@ -105,6 +128,40 @@ export function Settings() {
             ))}
           </div>
         </div>
+
+        {!state.settings.anthropicApiKey && webGPU && (
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="px-4 py-3 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <p className="font-semibold text-gray-900 text-sm">On-Device AI</p>
+                <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">WebGPU</span>
+              </div>
+              <p className="text-xs text-gray-400 mt-0.5">
+                SmolVLM-256M runs locally in your browser. First use downloads ~200 MB (cached after that).
+              </p>
+            </div>
+            <div className="p-4 space-y-3">
+              {vlmCached === null ? (
+                <p className="text-xs text-gray-400">Checking cache...</p>
+              ) : vlmCached ? (
+                <div className="flex items-center gap-2">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4 text-green-600 flex-shrink-0"><polyline points="20 6 9 17 4 12" /></svg>
+                  <p className="text-sm text-green-700">Model is cached and ready</p>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500">Model not yet downloaded</p>
+              )}
+              {preloadMsg !== '' && <p className="text-xs text-blue-600">{preloadMsg}</p>}
+              <button
+                onClick={handlePreload}
+                disabled={preloading || vlmCached === true}
+                className="w-full flex items-center justify-center gap-2 py-2.5 border border-blue-300 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-50 disabled:opacity-50 transition-colors"
+              >
+                {preloading ? <><Spinner size={16} /> Downloading...</> : vlmCached ? 'Model Ready' : 'Pre-load AI Model'}
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <div className="px-4 py-3 border-b border-gray-100">
