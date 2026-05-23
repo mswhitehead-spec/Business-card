@@ -88,18 +88,11 @@ export async function testApiKey(apiKey: string, model: string): Promise<void> {
 
 export function parseExtraction(text: string): Partial<BusinessCard> {
   let json = text.trim();
-
-  // Strip markdown code fences if present
   json = json.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
-
-  // Extract JSON object if there's surrounding text
   const match = json.match(/\{[\s\S]*\}/);
   if (match) json = match[0];
-
   const raw = JSON.parse(json);
-
   const str = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
-
   return {
     name: str(raw.name),
     title: str(raw.title),
