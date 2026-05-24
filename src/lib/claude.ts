@@ -31,8 +31,11 @@ export async function callClaude(
   apiKey: string,
   model: string
 ): Promise<string> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 30_000);
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
+    signal: controller.signal,
     headers: {
       'x-api-key': apiKey,
       'anthropic-version': '2023-06-01',
@@ -53,7 +56,7 @@ export async function callClaude(
         ],
       }],
     }),
-  });
+  }).finally(() => clearTimeout(timer));
 
   if (!res.ok) {
     const body = await res.text().catch(() => '');

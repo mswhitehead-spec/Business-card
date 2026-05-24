@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { callClaude, parseExtraction } from '../lib/claude';
 import { ocrImage } from '../lib/ocr';
 import { parseCardText } from '../lib/parseCardText';
-import { extractWithVLM, isWebGPUAvailable } from '../lib/vlm';
+import { extractWithVLM, isWebGPUAvailable, isModelCached } from '../lib/vlm';
 import type { BusinessCard } from '../types/contact';
 
 interface ExtractState {
@@ -43,7 +43,7 @@ export function useClaudeExtract() {
         return parsed;
       }
 
-      if (isWebGPUAvailable()) {
+      if (isWebGPUAvailable() && await isModelCached()) {
         try {
           const parsed = await extractWithVLM(imageDataUrl, ({ message, percent }) => {
             setState((prev) => ({ ...prev, progress: message, progressPct: percent }));
