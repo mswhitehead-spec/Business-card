@@ -78,11 +78,11 @@ export function ExtractStep({ imageDataUrl, base64, mediaType, onSuccess, onBack
           </div>
         ) : error ? (
           <div className="bg-red-50 border border-red-200 rounded-xl p-4 space-y-3">
-            <p className="text-red-700 font-medium text-sm">Extraction failed</p>
-            <p className="text-red-600 text-sm break-all">{error}</p>
+            <p className="text-red-700 font-medium text-sm">Couldn't read this card automatically</p>
+            <p className="text-red-600 text-sm">Add a Claude API key in Settings for reliable extraction, or enter the details manually.</p>
             <div className="flex gap-3">
-              <button onClick={onBack} className="flex-1 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700">Back</button>
-              <button onClick={runExtraction} className="flex-1 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium">Retry</button>
+              <button onClick={runExtraction} className="flex-1 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700">Retry</button>
+              <button onClick={() => onSuccess({})} className="flex-1 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium">Enter Manually</button>
             </div>
           </div>
         ) : mode === 'vlm' ? (
