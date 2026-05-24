@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { callClaude, parseExtraction } from '../lib/claude';
 import { ocrImage } from '../lib/ocr';
 import { parseCardText } from '../lib/parseCardText';
-import { extractWithVLM, isWebGPUAvailable } from '../lib/vlm';
+import { extractWithVLM, isWebGPUAvailable, isModelCached } from '../lib/vlm';
 import type { BusinessCard } from '../types/contact';
 
 interface ExtractState {
@@ -36,7 +36,6 @@ export function useClaudeExtract() {
     setState({ ...INITIAL, loading: true });
 
     try {
-      // Path 1: Claude API (when key provided)
       if (apiKey) {
         const text = await callClaude(base64, mediaType, apiKey, model);
         const parsed = parseExtraction(text);
@@ -44,8 +43,7 @@ export function useClaudeExtract() {
         return parsed;
       }
 
-      // Path 2: On-device VLM (when WebGPU available)
-      if (isWebGPUAvailable()) {
+      if (isWebGPUAvailable() && await isModelCached()) {
         try {
           const parsed = await extractWithVLM(imageDataUrl, ({ message, percent }) => {
             setState((prev) => ({ ...prev, progress: message, progressPct: percent }));
@@ -53,12 +51,10 @@ export function useClaudeExtract() {
           setState({ ...INITIAL, result: parsed, mode: 'vlm' });
           return parsed;
         } catch (vlmErr) {
-          // VLM failed — fall through to Tesseract silently
           console.warn('VLM extraction failed, falling back to OCR:', vlmErr);
         }
       }
 
-      // Path 3: Tesseract OCR fallback
       setState((prev) => ({ ...prev, progress: 'Reading card with OCR...', progressPct: undefined }));
       const rawText = await ocrImage(imageDataUrl);
       const parsed = parseCardText(rawText);
