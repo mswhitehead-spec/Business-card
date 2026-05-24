@@ -57,6 +57,9 @@ export function useClaudeExtract() {
 
       setState((prev) => ({ ...prev, progress: 'Reading card with OCR...', progressPct: undefined }));
       const rawText = await ocrImage(imageDataUrl);
+      if (rawText.trim().length < 10) {
+        throw new Error('OCR could not read text from this image. Try better lighting or add a Claude API key in Settings.');
+      }
       const parsed = parseCardText(rawText);
       setState({ ...INITIAL, result: parsed, mode: 'ocr' });
       return parsed;

@@ -41,7 +41,7 @@ export function ExtractStep({ imageDataUrl, base64, mediaType, onSuccess, onBack
   }
 
   function loadingSubtext() {
-    if (progress) return null; // progress message is self-explanatory
+    if (progress) return null;
     if (state.settings.anthropicApiKey) return 'Claude is reading the card and extracting contact details';
     if (isWebGPUAvailable()) return 'Running AI model locally — no data leaves your device';
     return 'Extracting text from the card image';
@@ -70,10 +70,7 @@ export function ExtractStep({ imageDataUrl, base64, mediaType, onSuccess, onBack
             {progressPct != null && (
               <div className="w-full max-w-xs">
                 <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-blue-500 rounded-full transition-all duration-300"
-                    style={{ width: `${progressPct}%` }}
-                  />
+                  <div className="h-full bg-blue-500 rounded-full transition-all duration-300" style={{ width: `${progressPct}%` }} />
                 </div>
                 <p className="text-xs text-gray-400 text-center mt-1">{progressPct}%</p>
               </div>
@@ -81,28 +78,22 @@ export function ExtractStep({ imageDataUrl, base64, mediaType, onSuccess, onBack
           </div>
         ) : error ? (
           <div className="bg-red-50 border border-red-200 rounded-xl p-4 space-y-3">
-            <p className="text-red-700 font-medium text-sm">Extraction failed</p>
-            <p className="text-red-600 text-sm break-all">{error}</p>
+            <p className="text-red-700 font-medium text-sm">Couldn't read this card automatically</p>
+            <p className="text-red-600 text-sm">Add a Claude API key in Settings for reliable extraction, or enter the details manually.</p>
             <div className="flex gap-3">
-              <button onClick={onBack} className="flex-1 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700">Back</button>
-              <button onClick={runExtraction} className="flex-1 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium">Retry</button>
+              <button onClick={runExtraction} className="flex-1 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700">Retry</button>
+              <button onClick={() => onSuccess({})} className="flex-1 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium">Enter Manually</button>
             </div>
           </div>
         ) : mode === 'vlm' ? (
           <div className="bg-green-50 border border-green-200 rounded-xl p-3 flex items-start gap-2">
-            <svg className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
+            <svg className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><polyline points="20 6 9 17 4 12" /></svg>
             <p className="text-green-700 text-xs">Analyzed with on-device AI — no data left your device.</p>
           </div>
         ) : mode === 'ocr' ? (
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2">
-            <svg className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-              <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
-            </svg>
-            <p className="text-amber-700 text-xs">
-              Used basic OCR — results may need corrections. Your device does not support WebGPU for on-device AI.
-            </p>
+            <svg className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+            <p className="text-amber-700 text-xs">Used basic OCR — results may need corrections. Your device does not support WebGPU for on-device AI.</p>
           </div>
         ) : null}
       </div>
