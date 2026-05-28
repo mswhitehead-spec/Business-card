@@ -16,7 +16,16 @@ export function saveToStorage(state: AppState): void {
   try {
     localStorage.setItem(KEY, JSON.stringify(state));
   } catch {
-    // localStorage full or unavailable
+    // Quota exceeded — retry without embedded images so contacts still persist
+    try {
+      const stripped = {
+        ...state,
+        contacts: state.contacts.map((c) => ({ ...c, imageDataUrl: null })),
+      };
+      localStorage.setItem(KEY, JSON.stringify(stripped));
+    } catch {
+      // localStorage unavailable (e.g. private browsing) — data lives in memory only
+    }
   }
 }
 

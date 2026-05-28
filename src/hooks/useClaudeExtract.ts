@@ -23,6 +23,13 @@ const INITIAL: ExtractState = {
   progressPct: undefined,
 };
 
+function withTimeout<T>(promise: Promise<T>, ms: number, msg: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) => setTimeout(() => reject(new Error(msg)), ms)),
+  ]);
+}
+
 export function useClaudeExtract() {
   const [state, setState] = useState<ExtractState>(INITIAL);
 
@@ -56,7 +63,11 @@ export function useClaudeExtract() {
       }
 
       setState((prev) => ({ ...prev, progress: 'Reading card with OCR...', progressPct: undefined }));
-      const rawText = await ocrImage(imageDataUrl);
+      const rawText = await withTimeout(
+        ocrImage(imageDataUrl),
+        45_000,
+        'OCR timed out. Add a Claude API key in Settings for reliable extraction.'
+      );
       if (rawText.trim().length < 10) {
         throw new Error('OCR could not read text from this image. Try better lighting or add a Claude API key in Settings.');
       }
